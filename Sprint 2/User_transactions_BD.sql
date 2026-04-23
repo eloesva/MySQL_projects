@@ -183,7 +183,7 @@ WHERE dc.company_name = 'Donec Ltd'
 GROUP BY cc.iban; -- b-2242
 
 -- =====================================================
--- EJERCICIO 1 N2 
+-- EJERCICIO 1 NIVEL 2 
 -- Identifica los cinco días que se generó la mayor cantidad de ingresos en la empresa por ventas. 
 -- Muestra la fecha de cada transacción junto con el total de las ventas.
 -- =====================================================
@@ -196,3 +196,44 @@ WHERE declined = 0
 GROUP BY DATE(transaction_timestamp)
 ORDER BY total_ventas DESC
 LIMIT 5;
+
+-- =====================================================
+-- EJERCICIO 2 NIVEL 2 
+-- Presenta el nombre, teléfono, país, fecha y amount, de aquellas empresas que realizaron transacciones con un valor
+-- comprendido entre 350 y 400 euros y en alguna de estas fechas: 
+-- 29 de abril de 2015, 20 de julio de 2018 y 13 de marzo de 2024. Ordena los resultados de mayor a menor cantidad.
+-- =====================================================
+SELECT 
+	dc.company_name,
+    dc.phone, dc.country,
+    ft.transaction_timestamp,
+    ft.amount
+FROM dim_companies dc
+JOIN fact_transactions ft
+	ON dc.company_id = ft.company_id
+WHERE ft.amount BETWEEN 350 AND 400
+AND DATE(ft.transaction_timestamp) IN ('2015-04-29', '2018-07-20', '2024-03-13')
+ORDER BY ft.amount DESC;
+
+-- =====================================================
+-- EJERCICIO 3 NIVEL 2 
+-- Necesitamos optimizar la asignación de los recursos y dependerá de la capacidad operativa que se requiera,
+-- por lo que te piden la información sobre la cantidad de transacciones que realizan las empresas, pero el departamento
+-- de recursos humanos es exigente y quiere un listado de las empresas en las que especifiques si tienen más de 400
+-- transacciones o menos.
+-- =====================================================
+SELECT 
+    dc.company_name,
+    COUNT(ft.transaction_id) AS num_transacciones,
+    CASE
+        WHEN COUNT(ft.transaction_id) > 400 THEN 'Más de 400 transacciones'
+        ELSE '400 o menos transacciones'
+    END AS categoria
+FROM dim_companies dc
+JOIN fact_transactions ft
+    ON dc.company_id = ft.company_id
+GROUP BY dc.company_id, dc.company_name
+ORDER BY num_transacciones DESC;
+
+
+
