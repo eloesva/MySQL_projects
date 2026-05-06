@@ -104,7 +104,7 @@ SELECT
   c.company_name,
   c.country,
   DATE(SAFE.PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S', t.timestamp)) AS fecha --primero convierte a timestamp y luego obtiene fecha sin horas
-FROM `sprint3_bronze.transactions_raw` AS t
+FROM `sprint3_bronze.transactions_raw_native` AS t
 JOIN `sprint3_bronze.companies_raw` AS c
   ON t.business_id = c.id
 WHERE SAFE_CAST(t.amount AS FLOAT64) BETWEEN 100 AND 200
@@ -113,6 +113,21 @@ WHERE SAFE_CAST(t.amount AS FLOAT64) BETWEEN 100 AND 200
     DATE '2018-07-20',
     DATE '2024-03-13'
   );
+  
+  -- Comparación de consultas tabla externa vs nativa
+  SELECT id
+  FROM `sprint3_bronze.transactions_raw`;
+  
+   SELECT id
+  FROM `sprint3_bronze.transactions_raw_native`;
+  
+  -- Comparación de consultas con y sin LIMIT
+  SELECT *
+  FROM `sprint3_bronze.transactions_raw`;
+
+  SELECT *
+  FROM `sprint3_bronze.transactions_raw`
+  LIMIT 10;
 
 -- SILVER
 -- Creación de tabla limpia para productos
@@ -121,7 +136,7 @@ SELECT
   id AS product_id,
   product_name AS name,
   SAFE_CAST(REPLACE(warehouse_id, 'WH-', '') AS INT64) AS warehouse_id,
-  price,
+  SAFE_CAST(REGEXP_REPLACE(CAST(price AS STRING), r'[^0-9.]', '') AS FLOAT64) AS price,
   colour,
   weight
 FROM `sprint3-analytics-estefaniat.sprint3_bronze.products_raw`;
